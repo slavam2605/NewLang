@@ -11,7 +11,8 @@ public class Main {
                 "f(2)"
         );
         Lexer lexer = new LangLexer(is);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        System.out.println(new LangParser(tokens).expr().e);
+//        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        System.out.println(lexer.getAllTokens());
+//        System.out.println(new LangParser(tokens).expr().e);
     }
 }

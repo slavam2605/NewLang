@@ -19,9 +19,10 @@ fragment ESC_CHAR:  '\\' (['\\/bfnrt] | UNICODE);
 fragment UNICODE:   'u' HEX HEX HEX HEX;
 fragment HEX:       [0-9a-fA-F];
 
-KEYWORD:        'auto';
-INT_TYPE:       'int';
-BOOL_TYPE:      'bool';
+AUTO_KEYWORD:       'auto';
+TEMPLATE_KEYWORD:   'template';
+INT_TYPE:           'int';
+BOOL_TYPE:          'bool';
 
 // Punctuation
 SEMICOLON:      ';';
@@ -65,6 +66,7 @@ OR_ASSIGN:      '|=';
 XOR_ASSIGN:     '^=';
 RSHIFT_ASSIGN:  '>>=';
 LSHIFT_ASSIGN:  '<<=';
+ARROW:          '->';
 
 ID:             [a-zA-Z_]+ [a-zA-Z0-9_]*;
 

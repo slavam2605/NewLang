@@ -3,6 +3,7 @@ parser grammar LangParser;
 options {tokenVocab = LangLexer;}
 @header {
 import structure.*;
+import util.Pair;
 }
 
 // Definition of variables
@@ -11,15 +12,37 @@ varDef
     |   'auto' (var_name=ID '=' expr)+ ';'
     ;
 
-// TODO
-type returns [Type t]
-    :   primitiveType
-    ;
+// primitive: int, bool, ...
+// arrays: T[]
+// generics: T<U, V>
+// templates: T<template U, V>
+// arrow types: T -> V
 
 // TODO
-primitiveType
-    :   'int'
-    |   'bool'
+type returns [Type t]
+    :   classType {$t = $classType.t;}
+    |   classType '<' typeList '>' {$t = Type.makeGeneric($classType.t, $typeList.arr);}
+    |   type '[' ']'
+    |   <assoc=right> type '->' type
+    ;
+
+typeList returns [Object[] arr] locals [List<Pair<Boolean, Type>> list, Boolean isTemplate]
+@init{$list = new ArrayList<>(); $isTemplate = false;}
+    :   ('template' {$isTemplate = true;})? t1=type {list.add(new Pair<>($isTemplate, $t1.t));}
+        (',' {$isTemplate = false;} ('template' {$isTemplate = true;})? tc=type {list.add(new Pair<>($isTemplate, $tc.t));})*
+        {
+            $arr = new Object[$list.size() * 2];
+            int i = 0;
+            for (Pair<Boolean, Type> pair: $list) {
+                $arr[2 * i] = pair.a;
+                $arr[2 * i + 1] = pair.b;
+                i++;
+            }
+        }
+    ;
+
+classType returns [Type t]
+    :   ID {$t = Type.makeClass($ID.text);}
     ;
 
 expr returns [Expr e] locals [Object obj, ExprMode mode]

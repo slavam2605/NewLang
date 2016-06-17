@@ -23,8 +23,8 @@ public class Type {
         this.typeParameters = typeParameters;
     }
 
-    public static Type makePrimitive(String typeName) {
-        return new Type(Kind.PRIMITIVE, typeName, null, null, null);
+    public static Type makeClass(String typeName) {
+        return new Type(Kind.CLASS, typeName, null, null, null);
     }
 
     public static Type makeArray(Type baseType) {

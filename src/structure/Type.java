@@ -4,6 +4,7 @@ import util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Moklev Vyacheslav
@@ -49,5 +50,38 @@ public class Type {
 
     public static Type makeArrow(Type baseType, Type resultType) {
         return new Type(Kind.ARROW, null, baseType, resultType, null);
+    }
+
+    public Kind getKind() {
+        return kind;
+    }
+
+    public String getPrimitiveName() {
+        return primitiveName;
+    }
+
+    public Type getBaseType() {
+        return baseType;
+    }
+
+    public Type getResultType() {
+        return resultType;
+    }
+
+    public List<Pair<Boolean, Type>> getTypeParameters() {
+        return typeParameters;
+    }
+
+    @Override
+    public String toString() {
+        switch (kind) {
+            case CLASS: return primitiveName;
+            case ARRAY: return baseType + "[]";
+            case GENERIC_OR_TEMPLATE: return baseType + "<" +
+                    typeParameters.stream().map(bt -> (bt.a ? "template " : "") + bt.b).collect(Collectors.joining(", "))
+                    + ">";
+            case ARROW: return baseType + " -> " + resultType;
+            default: throw new IllegalStateException("Unknown kind: " + kind);
+        }
     }
 }

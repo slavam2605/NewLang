@@ -21,8 +21,8 @@ fragment HEX:       [0-9a-fA-F];
 
 AUTO_KEYWORD:       'auto';
 TEMPLATE_KEYWORD:   'template';
-INT_TYPE:           'int';
-BOOL_TYPE:          'bool';
+
+ID:                 [a-zA-Z_]+ [a-zA-Z0-9_]*;
 
 // Punctuation
 SEMICOLON:      ';';
@@ -31,6 +31,8 @@ LEFTB:          '(';
 RIGHTB:         ')';
 LEFTSB:         '[';
 RIGHTSB:        ']';
+LEFTCB:         '{';
+RIGHTCB:        '}';
 INCREMENT:      '++';
 DECREMENT:      '--';
 PLUS:           '+';
@@ -40,8 +42,6 @@ DIV:            '/';
 MOD:            '%';
 TILDE:          '~';
 BANG:           '!';
-LSHIFT:         '<<';
-RSHIFT:         '>>';
 LESS:           '<';
 GREATER:        '>';
 LESS_EQ:        '<=';
@@ -67,8 +67,6 @@ XOR_ASSIGN:     '^=';
 RSHIFT_ASSIGN:  '>>=';
 LSHIFT_ASSIGN:  '<<=';
 ARROW:          '->';
-
-ID:             [a-zA-Z_]+ [a-zA-Z0-9_]*;
 
 WS:             [ \t\n\r]+ -> skip;
 COMMENT:        '/*' .*? '*/' -> skip;

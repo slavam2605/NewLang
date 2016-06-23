@@ -8,8 +8,8 @@ import util.Pair;
 
 // Definition of variables
 varDef
-    :   type (var_name=ID ('=' expr)?)+ ';'
-    |   'auto' (var_name=ID '=' expr)+ ';'
+    :   type var_name1=ID ('=' e1=expr)? (',' var_namec=ID ('=' ec=expr)?)*
+    |   'auto' var_name1=ID '=' e1=expr (',' var_namec=ID '=' ec=expr)*
     ;
 
 // primitive: int, bool, ...
@@ -22,14 +22,14 @@ varDef
 type returns [Type t]
     :   classType {$t = $classType.t;}
     |   classType '<' typeList '>' {$t = Type.makeGeneric($classType.t, $typeList.arr);}
-    |   type '[' ']'
-    |   <assoc=right> type '->' type
+    |   type '[' ']' {$t = Type.makeArray($type.t);}
+    |   <assoc=right> t1=type '->' t2=type {$t = Type.makeArrow($t1.t, $t2.t);}
     ;
 
 typeList returns [Object[] arr] locals [List<Pair<Boolean, Type>> list, Boolean isTemplate]
 @init{$list = new ArrayList<>(); $isTemplate = false;}
-    :   ('template' {$isTemplate = true;})? t1=type {list.add(new Pair<>($isTemplate, $t1.t));}
-        (',' {$isTemplate = false;} ('template' {$isTemplate = true;})? tc=type {list.add(new Pair<>($isTemplate, $tc.t));})*
+    :   ('template' {$isTemplate = true;})? t1=type {$list.add(new Pair<>($isTemplate, $t1.t));}
+        (',' {$isTemplate = false;} ('template' {$isTemplate = true;})? tc=type {$list.add(new Pair<>($isTemplate, $tc.t));})*
         {
             $arr = new Object[$list.size() * 2];
             int i = 0;
@@ -73,8 +73,8 @@ expr returns [Expr e] locals [Object obj, ExprMode mode]
         |   '-' {$mode = ExprMode.MINUS;}
         ) e2=expr {$e = new Expr($mode, null, $e1.e, $e2.e);}
     |   e1=expr
-        (   '<<' {$mode = ExprMode.LSHIFT;}
-        |   '>>' {$mode = ExprMode.RSHIFT;}
+        (   '<' '<' {$mode = ExprMode.LSHIFT;}
+        |   '>' '>' {$mode = ExprMode.RSHIFT;}
         ) e2=expr {$e = new Expr($mode, null, $e1.e, $e2.e);}
     |   e1=expr
         (   '<=' {$mode = ExprMode.LESS_EQ;}
@@ -121,6 +121,25 @@ literal returns [Expr e]
     |   STRING_LITERAL {$e = new Expr(ExprMode.STRING_LITERAL, $STRING_LITERAL.text.substring(1, $STRING_LITERAL.text.length() - 1));} //TODO
     |   BOOLEAN_LITERAL {$e = new Expr(ExprMode.BOOLEAN_LITERAL, Boolean.valueOf($BOOLEAN_LITERAL.text.equals("true")));}
     |   'null' {$e = new Expr(ExprMode.NULL_LITERAL, null);}
+    |   '(' typedParamList? ')' '->' codeStatement
+    ;
+
+typedParamList returns [List<Pair<Type, String>> list] locals [Type t]
+@init{$list = new ArrayList<>(); $t = null;}
+    :   (t1=type {$t = $t1.t;})? id1=ID {$list.add(new Pair<>($t, $id1.text));}
+        (',' {$t = null;} (tc=type {$t = $tc.t;})? idc=ID {$list.add(new Pair<>($t, $idc.text));})*
+    ;
+
+// TODO
+codeStatement
+    :   codeBlock
+    |   varDef
+    |   expr
+    ;
+
+// TODO
+codeBlock
+    :   '{' codeStatement* '}'
     ;
 
 exprList returns [List<Expr> list]
@@ -144,3 +163,5 @@ exprList returns [List<Expr> list]
 
 // 3. Expressions
 // Java-like expressions without "instanceof" and ">>>"
+// Functional literals: (a, b, c) -> {}
+//                      {int a, String b) -> {}

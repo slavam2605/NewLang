@@ -21,6 +21,8 @@ fragment HEX:       [0-9a-fA-F];
 
 AUTO_KEYWORD:       'auto';
 TEMPLATE_KEYWORD:   'template';
+WHILE_KEYWORD:      'while';
+RETURN_KEYWORD:     'return';
 
 ID:                 [a-zA-Z_]+ [a-zA-Z0-9_]*;
 

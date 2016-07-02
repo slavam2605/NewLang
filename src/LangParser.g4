@@ -3,12 +3,19 @@ parser grammar LangParser;
 options {tokenVocab = LangLexer;}
 @header {
 import structure.*;
+import structure.statement.*;
 import util.Pair;
 }
 
 // Definition of variables
-varDef
-    :   type var_name1=ID ('=' e1=expr)? (',' var_namec=ID ('=' ec=expr)?)*
+varDef returns [List<VarDef> vdList] locals [Type t, Expr e]
+@init {
+    $vdList = new ArrayList<>();
+    $t = null;
+    $e = null;
+}
+    :   type {$t = $type.t;} var_name1=ID ('=' e1=expr {$e = $e1.e;})? {$vdList.add(new VarDef($t, $var_name1.text, $e));}
+        (',' {$e = null;} var_namec=ID ('=' ec=expr {$e = $ec.e;})? {$vdList.add(new VarDef($t, $var_namec.text, $e));})*
     |   'auto' var_name1=ID '=' e1=expr (',' var_namec=ID '=' ec=expr)*
     ;
 
@@ -49,7 +56,7 @@ expr returns [Expr e] locals [Object obj, ExprMode mode]
 @init{$obj = null; $mode = null;}
     :   primary {$e = $primary.e;}
     |   e1=expr '[' e2=expr ']' {$e = new Expr(ExprMode.ARRAY_ELEMENT, null, $e1.e, $e2.e);}
-    |   expr '(' (exprList {$obj = $exprList.list;})? ')' {$e = new Expr(ExprMode.FUNCTION_CALL, $obj, $expr.e);}
+    |   e1=expr '(' (exprList {$obj = $exprList.list;})? ')' {$e = new Expr(ExprMode.FUNCTION_CALL, $obj, $e1.e);}
     |   '(' type ')' expr {$e = new Expr(ExprMode.TYPE_CAST, $type.t, $expr.e);}
     |   expr
             (   '++' {$mode = ExprMode.POST_INCREMENT;}
@@ -114,14 +121,16 @@ primary returns [Expr e]
     |   ID {$e = new Expr(ExprMode.ID, $ID.text);}
     ;
 
-literal returns [Expr e]
+literal returns [Expr e] locals [Object temp]
+@init{$temp = null;}
     :   INT_LITERAL {$e = new Expr(ExprMode.INT_LITERAL, Integer.valueOf($INT_LITERAL.text));}
     |   FLOAT_LITERAL {$e = new Expr(ExprMode.FLOAT_LITERAL, Double.valueOf($FLOAT_LITERAL.text));}
     |   CHAR_LITERAL {$e = new Expr(ExprMode.CHAR_LITERAL, $CHAR_LITERAL.text.substring(1, $CHAR_LITERAL.text.length() - 1));} //TODO
     |   STRING_LITERAL {$e = new Expr(ExprMode.STRING_LITERAL, $STRING_LITERAL.text.substring(1, $STRING_LITERAL.text.length() - 1));} //TODO
     |   BOOLEAN_LITERAL {$e = new Expr(ExprMode.BOOLEAN_LITERAL, Boolean.valueOf($BOOLEAN_LITERAL.text.equals("true")));}
     |   'null' {$e = new Expr(ExprMode.NULL_LITERAL, null);}
-    |   '(' typedParamList? ')' '->' codeStatement
+    |   '(' (typedParamList {$temp = $typedParamList.list;})? ')' '->' codeStatement
+        {$e = new Expr(ExprMode.FUNCTIONAL_LITERAL, new Pair($temp, $codeStatement.s));}
     ;
 
 typedParamList returns [List<Pair<Type, String>> list] locals [Type t]
@@ -131,15 +140,17 @@ typedParamList returns [List<Pair<Type, String>> list] locals [Type t]
     ;
 
 // TODO
-codeStatement
-    :   codeBlock
-    |   varDef
-    |   expr
+codeStatement returns [CodeStatement s]
+    :   codeBlock {$s = new CodeBlockStatement($codeBlock.list);}
+    |   varDef {$s = new VarDefStatement($varDef.vdList);}
+    |   expr {$s = new ExprStatement($expr.e);}
+    |   'while' '(' expr ')' cs=codeStatement {$s = new WhileStatement($expr.e, $cs.s);}
+    |   'return' expr {$s = new ReturnStatement($expr.e);}
     ;
 
-// TODO
-codeBlock
-    :   '{' codeStatement* '}'
+codeBlock returns [List<CodeStatement> list]
+@init {$list = new ArrayList<>();}
+    :   '{' (codeStatement ';' {$list.add($codeStatement.s);})* '}'
     ;
 
 exprList returns [List<Expr> list]
@@ -165,3 +176,9 @@ exprList returns [List<Expr> list]
 // Java-like expressions without "instanceof" and ">>>"
 // Functional literals: (a, b, c) -> {}
 //                      {int a, String b) -> {}
+
+// 4. Code structure
+// var definition
+// { code block }
+// while (cond) statement
+// TODO

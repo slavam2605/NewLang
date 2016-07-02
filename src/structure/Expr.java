@@ -24,4 +24,16 @@ public class Expr {
                 ", object=" + object +
                 '}';
     }
+
+    public ExprMode getMode() {
+        return mode;
+    }
+
+    public Expr[] getExprList() {
+        return exprList;
+    }
+
+    public Object getObject() {
+        return object;
+    }
 }

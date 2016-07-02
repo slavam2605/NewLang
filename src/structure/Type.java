@@ -84,4 +84,9 @@ public class Type {
             default: throw new IllegalStateException("Unknown kind: " + kind);
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return !(o == null || !(o instanceof Type)) && toString().equals(o.toString());
+    }
 }

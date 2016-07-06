@@ -17,5 +17,12 @@ public class Main {
         );
         Lexer lexer = new LangLexer(is);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
+        // Unification rules
+        // A. type1 = type2
+        //    1. if (type1.equals(type2)) ⇒ {}
+        //    2. if (type1 == a → b, type2 == c → d) ⇒ {a = c, b = d}
+        //    3. if (type1 == a @ b, type2 == c @ d)
+        //       3.1. if (a.equals(b)) ⇒ {b = d}
+        //       3.2. else ⇒ ⊥
     }
 }

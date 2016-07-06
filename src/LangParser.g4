@@ -4,6 +4,7 @@ options {tokenVocab = LangLexer;}
 @header {
 import structure.*;
 import structure.statement.*;
+import structure.type.*;
 import util.Pair;
 }
 
@@ -27,10 +28,10 @@ varDef returns [List<VarDef> vdList] locals [Type t, Expr e]
 
 // TODO
 type returns [Type t]
-    :   classType {$t = $classType.t;}
-    |   classType '<' typeList '>' {$t = Type.makeGeneric($classType.t, $typeList.arr);}
-    |   type '[' ']' {$t = Type.makeArray($type.t);}
-    |   <assoc=right> t1=type '->' t2=type {$t = Type.makeArrow($t1.t, $t2.t);}
+    :   classType
+    |   classType '<' typeList '>'
+    |   type '[' ']'
+    |   <assoc=right> t1=type '->' t2=type
     ;
 
 typeList returns [Object[] arr] locals [List<Pair<Boolean, Type>> list, Boolean isTemplate]
@@ -49,7 +50,7 @@ typeList returns [Object[] arr] locals [List<Pair<Boolean, Type>> list, Boolean 
     ;
 
 classType returns [Type t]
-    :   ID {$t = Type.makeClass($ID.text);}
+    :   ID
     ;
 
 expr returns [Expr e] locals [Object obj, ExprMode mode]

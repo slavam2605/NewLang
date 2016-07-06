@@ -1,5 +1,5 @@
 import structure.Expr;
-import structure.Type;
+import structure.type.Type;
 import structure.statement.CodeStatement;
 import util.Pair;
 

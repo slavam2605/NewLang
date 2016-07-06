@@ -1,5 +1,7 @@
 package structure;
 
+import structure.type.Type;
+
 /**
  * @author Moklev Vyacheslav
  */
